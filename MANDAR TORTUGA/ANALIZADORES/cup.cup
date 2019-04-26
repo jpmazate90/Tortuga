@@ -1,0 +1,236 @@
+package Analizadores;
+
+import Logica.Acciones;
+import Objetos.Instruccion;
+import Objetos.Variable;
+import java_cup.runtime.*;
+import java_cup.runtime.XMLElement;
+import javax.swing.JTextArea;
+import java_cup.runtime.XMLElement;
+
+parser code {:
+
+
+	
+	// Connect this parser to a scanner!
+	JTextArea area;
+	int valor=0;
+
+	
+
+	public parser(AnalizadorLexico1 lex,JTextArea area) {
+		super(lex);
+		this.area=area;
+	}
+
+	
+
+        public void syntax_error(Symbol cur_token) {
+              System.out.println("OCURRIO UN ERROR SINTACTICO, FILA: " + cur_token.left + ", COLUMNA: " + cur_token.right+" TOKEN:"+cur_token);
+
+
+        }
+
+	
+	
+	String lexema = "";
+	String lexemaGlobal = "";
+	
+	public void crearLexema(String lexema,String mandar){
+		if(lexema.equals("")){
+			lexema = mandar+" ";
+		}else{
+			lexema = lexema +" "+mandar+" ";
+		}
+		                Acciones.repeats.set(Acciones.repeats.size()-1, lexema);
+
+	}
+	
+	public void crearLexemaGlobal(String mandar){
+		if(lexemaGlobal.equals("")){
+			lexemaGlobal = mandar+" ";
+		}else{
+			lexemaGlobal = lexemaGlobal +" "+mandar+" ";
+		}
+	}
+	
+	String expresion="";
+	public void crearLexemaExpresion(String mandar){
+		if(lexemaGlobal.equals("")){
+			expresion = mandar+" ";
+		}else{
+			expresion = expresion +" "+mandar+" ";
+		}
+	}
+	
+	public void crearInstruccion(String lexema, String valor) {
+              Instruccion instruccion;
+	      instruccion = new Instruccion(lexema,valor);
+	      Acciones.instrucciones.add(instruccion);	
+        }
+
+	public void agregarVariableAsignacion(String nombre, int valor){
+              Variable variable;
+	      variable = new Variable(nombre,Integer.toString(valor));
+	      Acciones.agregarVariableAsignacion(variable);	
+        }
+        public void agregarVariable(String nombre){
+              Variable variable;
+	      variable = new Variable(nombre);
+	      boolean pudo = Acciones.agregarVariable(variable);
+	      if(pudo==false){
+		System.out.println("NO SE PUDO AGREGAR LA VARIABLE" +nombre+"YA EXISTE UNA IGUAL");
+	      }	
+        }
+        
+	
+:}
+
+/* Terminals (tokens returned by the scanner). */
+terminal String
+HEXADECIMAL,NUMERAL,FORWARD,BACKWARD,RIGHTT,LEFTT,CLEARS,PENUP,PENDOWN,TOCENTER,COLOR,POSITIONXY,POSITIONX,POSITIONY,HIDETURTLE,SHOWTURTLE,TOERASE,TODRAW,REPEAT,GUION,SUMA,MULTIPLICACION,DIVISION,PARENTESIS_ABIERTO,PARENTESIS_CERRADO,IGUAL,CORCHETE_ABIERTO,CORCHETE_CERRADO,COMA,IDD,COMENTARIO,NUMEROS;
+         
+
+/* Non-terminals */
+
+non terminal Object 
+estructura_definitiva,s,t,f,forward,backward, rightt ,leftt ,clears ,penup ,pendown ,tocenter ,color ,positionxy ,positionx ,positiony ,hideturtle ,showturtle ,toerase ,todraw ,repeat ,variable ,comentario,
+estructura2,forwardP,backwardP,righttP,lefttP,clearsP,penupP,pendownP,tocenterP,colorP,positionxyP,positionxP,positionyP,hideturtleP ,showturtleP ,toeraseP ,todrawP ,repeatP ,variableP ,comentarioP,sP,tP,fP;
+
+/* The grammar */
+start with estructura_definitiva;
+
+estructura_definitiva ::= estructura_definitiva forward|estructura_definitiva backward|estructura_definitiva rightt|estructura_definitiva leftt | estructura_definitiva clears |estructura_definitiva penup |estructura_definitiva pendown |estructura_definitiva tocenter |estructura_definitiva color |estructura_definitiva positionxy |estructura_definitiva positionx |estructura_definitiva positiony |estructura_definitiva hideturtle | estructura_definitiva showturtle |estructura_definitiva toerase |estructura_definitiva todraw |estructura_definitiva repeat |estructura_definitiva variable |estructura_definitiva comentario|forward|backward|rightt|leftt |clears |penup |pendown |tocenter |color |positionxy |positionx |positiony |hideturtle |showturtle |toerase |todraw |repeat |variable |comentario;
+
+
+estructura2::= estructura2 forwardP|estructura2 backwardP|estructura2 righttP|estructura2 lefttP|estructura2 clearsP|estructura2 penupP|estructura2 pendownP|estructura2 tocenterP|estructura2 colorP|estructura2 positionxyP|estructura2 positionxP|estructura2 positionyP|estructura2 hideturtleP |estructura2 showturtleP |estructura2 toeraseP |estructura2 todrawP |estructura2 repeatP |estructura2 variableP |estructura2 comentario|forwardP|backwardP|righttP|lefttP|clearsP|penupP|pendownP|tocenterP|colorP|positionxyP|positionxP|positionyP|hideturtleP |showturtleP |toeraseP |todrawP |repeatP |variableP |comentarioP;
+
+forward ::= FORWARD s:e1 {:crearInstruccion("fd",e1.toString());:};
+backward ::= BACKWARD s:e1 {:crearInstruccion("bk",e1.toString());:};
+rightt ::= RIGHTT s:e1 {:crearInstruccion("rt",e1.toString());:};
+leftt ::= LEFTT s:e1 {:crearInstruccion("lt",e1.toString());:};
+clears ::= CLEARS {:crearInstruccion("cs",null);:};
+penup ::= PENUP {:crearInstruccion("pu",null);:};
+pendown ::= PENDOWN {:crearInstruccion("pd",null);:};
+tocenter ::= TOCENTER {:crearInstruccion("cr",null);:};
+color ::= COLOR NUMEROS:e1 {:crearInstruccion("color",e1.toString());:}|COLOR HEXADECIMAL:e2 {:crearInstruccion("color",e2.toString());:};
+positionxy ::= POSITIONXY NUMEROS:e1 COMA NUMEROS:e2 {:crearInstruccion("posxy",e1.toString()+","+e2.toString());:};
+positionx ::= POSITIONX NUMEROS:e1 {:crearInstruccion("posx",e1.toString());:};
+positiony ::= POSITIONY NUMEROS:e1 {:crearInstruccion("posy",e1.toString());:};
+hideturtle ::= HIDETURTLE {:crearInstruccion("ht",null);:};
+showturtle ::= SHOWTURTLE {:crearInstruccion("st",null);:};
+toerase ::= TOERASE {:crearInstruccion("te",null);:};
+todraw ::= TODRAW {:crearInstruccion("td",null);:};
+repeat ::= REPEAT s:e1 CORCHETE_ABIERTO estructura2 CORCHETE_CERRADO {:
+
+String ultimo = Acciones.ultimoLexema();
+int a = Acciones.repeats.size();
+int e = Integer.parseInt(e1.toString());
+if(a==1){
+if(e>1){
+for(int i=0;i<e-1;i++){
+crearLexema(Acciones.ultimoLexema(),ultimo);
+}
+Acciones.generarParse(Acciones.ultimoLexema());
+}else{
+Acciones.generarParse(Acciones.ultimoLexema());
+}
+
+
+}else{
+
+System.out.println("error con repeats");
+}
+
+:};
+
+
+
+forwardP ::= FORWARD sP:e1 {:crearLexema(Acciones.ultimoLexema(),"FORWARD "+e1);:};
+backwardP ::= BACKWARD sP:e1 {:crearLexema(Acciones.ultimoLexema(),"BACKWARD "+e1);:};
+righttP ::= RIGHTT sP:e1 {:crearLexema(Acciones.ultimoLexema(),"rt "+e1);:};
+lefttP ::= LEFTT sP:e1 {:crearLexema(Acciones.ultimoLexema(),"lt "+e1);:};
+clearsP ::= CLEARS {:crearLexema(Acciones.ultimoLexema(),"CLEARS");:};
+penupP ::= PENUP {:crearLexema(Acciones.ultimoLexema(),"PENUP");:};
+pendownP ::= PENDOWN {:crearLexema(Acciones.ultimoLexema(),"PENDOWN");:};
+tocenterP ::= TOCENTER {:crearLexema(Acciones.ultimoLexema(),"TOCENTER");:};
+colorP ::= COLOR NUMEROS:e1 {:crearLexema(Acciones.ultimoLexema(),"COLOR"+e1);:}|COLOR HEXADECIMAL:e2 {:crearLexema(Acciones.ultimoLexema(),"COLOR "+e2);:};
+positionxyP ::= POSITIONXY NUMEROS:e1 COMA NUMEROS:e2 {: crearLexema(Acciones.ultimoLexema(),"POSITIONXY "+e1+","+e2);:};
+positionxP ::= POSITIONX NUMEROS:e1 {:crearLexema(Acciones.ultimoLexema(),"POSITIONX "+e1);:};
+positionyP ::= POSITIONY NUMEROS:e1 {:crearLexema(Acciones.ultimoLexema(),"POSITIONY "+e1);:};
+hideturtleP ::= HIDETURTLE {:crearLexema(Acciones.ultimoLexema(),"HIDETURTLE");:};
+showturtleP ::= SHOWTURTLE {:crearLexema(Acciones.ultimoLexema(),"SHOWTURTLE");:};
+toeraseP ::= TOERASE {:crearLexema(Acciones.ultimoLexema(),"TOERASE");:};
+todrawP ::= TODRAW {:crearLexema(Acciones.ultimoLexema(),"TODRAW");:};
+repeatP ::= REPEAT s:e1 CORCHETE_ABIERTO estructura2 CORCHETE_CERRADO {: 
+String ultimo = Acciones.ultimoLexema();
+int e = Integer.parseInt(e1.toString());
+if(e>1){
+for(int i=0;i<e-1;i++){
+
+crearLexema(Acciones.ultimoLexema(),ultimo);
+}
+
+Acciones.unirLexemas();
+}else{
+Acciones.unirLexemas();
+}
+
+:};
+
+
+variableP ::= IDD:e1 {:crearLexema(Acciones.ultimoLexema(),e1);:};
+variableP ::= IDD:e1 IGUAL sP:e2 {:crearLexema(Acciones.ultimoLexema(),e1+" = "+e2);:};
+
+
+variable ::= IDD:e1 {:agregarVariable(e1);:};
+variable ::= IDD:e1 IGUAL s:e2 {:agregarVariableAsignacion(e1,valor);:};
+
+
+
+comentario ::= NUMERAL COMENTARIO:e1 {:System.out.println("SE ENCONTRO UN COMENTARIO: "+e1);:};
+
+
+s ::= t:e1 SUMA s:e2 {:RESULT = Integer.parseInt(e1.toString())+Integer.parseInt(e2.toString());valor=Integer.parseInt(RESULT.toString());:};
+s ::= t:e1 GUION s:e2 {:RESULT = Integer.parseInt(e1.toString())-Integer.parseInt(e2.toString());valor=Integer.parseInt(RESULT.toString());:};
+s ::= t:e1 {:RESULT = Integer.parseInt(e1.toString());valor=Integer.parseInt(RESULT.toString());:};
+t ::= f:e1 MULTIPLICACION t:e2 {:RESULT = Integer.parseInt(e1.toString())*Integer.parseInt(e2.toString());valor=Integer.parseInt(RESULT.toString());:};
+t ::= f:e1 DIVISION t:e2 {:RESULT = Integer.parseInt(e1.toString())/Integer.parseInt(e2.toString());valor=Integer.parseInt(RESULT.toString());:};
+t ::= f:e1 {:RESULT = Integer.parseInt(e1.toString());valor=Integer.parseInt(RESULT.toString());:};
+f ::= PARENTESIS_ABIERTO s:e1 PARENTESIS_CERRADO {:RESULT = Integer.parseInt(e1.toString());valor=Integer.parseInt(RESULT.toString());:};
+f ::= NUMEROS:e1 {:RESULT = Integer.parseInt(e1.toString());valor=Integer.parseInt(RESULT.toString());:} | IDD:e2 {:
+boolean existe = Acciones.existeId(e2);
+if(existe==true){
+	Integer lexema = Acciones.valorId(e2);
+	if(lexema!=null){
+		RESULT = lexema;
+	}else{
+		System.out.println("NO TIENE UN VALOR EL ID: "+e2);
+
+	}
+
+}else{
+	System.out.println("NO SE ENCUENTRA EL ID: "+e2);
+
+	
+}
+valor=Integer.parseInt(RESULT.toString());
+System.out.println(valor);
+
+
+:} ;
+
+sP ::= tP:e1 SUMA sP:e2 {:RESULT = e1.toString()+" + "+e2.toString();:};
+sP ::= tP:e1 GUION sP:e2 {:RESULT = e1.toString()+" - "+e2.toString();:};
+sP ::= tP:e1 {:RESULT = e1.toString();:};
+tP ::= fP:e1 MULTIPLICACION tP:e2 {:RESULT = e1.toString()+" * "+e2.toString();:};
+tP ::= fP:e1 DIVISION tP:e2 {:RESULT = e1.toString()+" / "+e2.toString();:};
+tP ::= fP:e1 {:RESULT = e1.toString();:};
+fP ::= PARENTESIS_ABIERTO sP:e1 PARENTESIS_CERRADO {:RESULT = " ( "+e1.toString() +" ) ";:};
+fP ::= NUMEROS:e1 {:RESULT = e1;:} | IDD:e2 {:RESULT = e2;:};
+
+
+
+
+
+
